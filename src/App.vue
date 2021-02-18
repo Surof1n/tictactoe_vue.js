@@ -52,6 +52,18 @@
       <p v-if="winName && winName != 'Ничья'">Победа {{ winName }}</p>
       <p v-if="winName == 'Ничья'">{{ winName }}</p>
     </div>
+    <div class="menu__container active">
+      <ul class="menu__list">
+        <li @click="gamepeoples($event)" class="menu__list-item">
+          <i class="icofont-users-alt-4"></i>
+          <div class="menu__item-text">Двое игроков</div>
+        </li>
+        <li @click="gamepc($event)" class="menu__list-item">
+          <i class="icofont-computer"></i>
+          <div class="menu__item-text">C компьютером</div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -68,7 +80,7 @@ export default {
         [2, 5, 8],
         [3, 6, 9],
         [1, 5, 9],
-        [7, 5, 3]
+        [7, 5, 3],
       ],
       gameSlots: [
         { key: 1, slot: "" },
@@ -79,16 +91,33 @@ export default {
         { key: 6, slot: "" },
         { key: 7, slot: "" },
         { key: 8, slot: "" },
-        { key: 9, slot: "" }
+        { key: 9, slot: "" },
       ],
       gamerPoint: 0,
       gameActiveName: "Напишите имена",
       gamerNameFirst: null,
       gamerNameSecond: null,
-      winName: null
+      winName: null,
     };
   },
   methods: {
+    gamepeoples(event) {
+      document.querySelector(".container__inputs").className =
+        "container__inputs active";
+      document.querySelector(".game__container").className =
+        "game__container active";
+      document.querySelector(".menu__container.active").className =
+        "menu__container";
+    },
+    gamepc(event) {
+      document.querySelector(".game__container").className =
+        "game__container active";
+      document.querySelector(".menu__container.active").className =
+        "menu__container";
+      this.gamerNameFirst = "Игрок";
+      this.gamerNameSecond = "Компьютер";
+      this.gameActiveName = this.gamerNameFirst;
+    },
     activeblock(item, event) {
       if (
         this.gameActiveName == "Одинаковые имена" ||
@@ -111,6 +140,24 @@ export default {
         if (this.gamerPoint >= 5) {
           this.checkWin();
         }
+        if (this.gameActiveName == "Компьютер" && this.gamerPoint != 9) {
+          setTimeout(() => {
+            const noactiveLenght = Math.floor(
+              this.gameSlots.filter((item) => item.slot == "").length
+            );
+            const randomIndex = Math.floor(
+              Math.random() * (noactiveLenght - 0) + 0
+            );
+            this.gameSlots.filter((item) => item.slot == "")[randomIndex].slot =
+              "O";
+            this.gamerPoint += 1;
+            this.gameActiveName = this.gamerNameFirst;
+            if (this.gamerPoint >= 5) {
+              this.checkWin();
+            }
+          });
+        }
+
       } else if (
         this.gamerPoint % 2 == 1 &&
         this.gameSlots[item.key - 1].slot == ""
@@ -119,6 +166,7 @@ export default {
         this.gameSlots[item.key - 1].slot = "O";
         this.gamerPoint += 1;
         this.gameActiveName = this.gamerNameFirst;
+
         if (this.gamerPoint >= 5) {
           this.checkWin();
         }
@@ -131,24 +179,28 @@ export default {
       }
     },
     checkWin() {
-      this.gamesWinSlots.forEach(itemWinSlot => {
+      this.gamesWinSlots.forEach((itemWinSlot) => {
         if (
           this.gameSlots.filter(
-            item => itemWinSlot.includes(item.key) && item.slot == "X"
+            (item) => itemWinSlot.includes(item.key) && item.slot == "X"
           ).length >= 3
         ) {
           this.winName = this.gamerNameFirst;
+
           return;
-        }
-        if (
+        } else if (
           this.gameSlots.filter(
-            item => itemWinSlot.includes(item.key) && item.slot == "O"
+            (item) => itemWinSlot.includes(item.key) && item.slot == "O"
           ).length >= 3
         ) {
           this.winName = this.gamerNameSecond;
           return;
-        }
-        if (this.gamerPoint == 9) {
+        } else if (this.gamerPoint == 9 && !this.winName) {
+          console.log(
+            this.gameSlots.filter(
+              (item) => itemWinSlot.includes(item.key) && item.slot == "X"
+            ).length
+          );
           this.winName = "Ничья";
           return;
         }
@@ -180,127 +232,9 @@ export default {
       } else if (this.gamerNameFirst == "" || this.gamerNameSecond == "") {
         this.gameActiveName = "Напишите имена";
       }
-    }
-  }
+    },
+  },
 };
 </script>
-
-<style>
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap");
-
-.container__inputs {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  background-color: #000;
-  width: 100%;
-}
-label {
-  margin: 10px 0 10px 0;
-  color: #fff;
-  font-family: "Montserrat";
-}
-input {
-  max-width: 300px;
-  padding: 5px 0;
-  width: 100%;
-  color: #fff;
-  font-size: 30px;
-  border: solid 2px #fff;
-  background-color: #000;
-  font-family: "Montserrat";
-  text-align: center;
-}
-input:focus {
-  outline: none;
-  border: solid 2px #fff;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0px;
-  margin: 0px;
-}
-#app {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  flex-direction: column;
-}
-.game__container {
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 40px #000 solid;
-  border-top: 20px solid #000;
-}
-
-.game__map {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  width: 300px;
-  height: 300px;
-}
-.game__item {
-  background-color: black;
-  width: 100px;
-  height: 100px;
-  border: 1px solid white;
-  color: white;
-  font-family: Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
-    sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 50px;
-  transition: 0.55s ease all;
-  cursor: pointer;
-  user-select: none;
-}
-
-.game__item.active {
-  animation: ease-in-out bounce 0.8s;
-  width: 100px;
-  height: 100px;
-  border: 1px solid white;
-  color: white;
-  font-family: Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
-    sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 50px;
-  animation-fill-mode: forwards;
-}
-
-p {
-  width: 100%;
-  text-align: center;
-  background: #000;
-  font-family: "Montserrat";
-  font-size: 35px;
-  color: white;
-  padding: 30px 0 0 0;
-}
-
-.lower {
-  font-size: 28px;
-  padding: 15px 0 30px 0;
-}
-
-@keyframes bounce {
-  from {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.85);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-</style>
+<style src="./icofont/icofont.min.css"></style>
+<style src="./style.css"></style>
